@@ -107,18 +107,20 @@ def update_candle_data(filepath, ticker,update_date=datetime.datetime.today(), i
     last_data_point_date = data.loc[data.index[-1]]["open_time"].date()                 # checks date of last data point
     missing_data = update_date.date() - last_data_point_date                            # check many days of data is missing
     new_date = data.loc[data.index[-1]]["open_time"].date() + datetime.timedelta(1)     # set the date from when we update data => 1 day + our last data entry
+    
+    # sets date into right format 
+    startDate = datetime.datetime(new_date.year, new_date.month, new_date.day)
 
-    # sets date into right format -> day and month here are in wrong places because binance uses amrecian date format(swapped month and day place)
-    startDate = datetime.datetime(new_date.year, new_date.day, new_date.month)
 
     # updates data if there is atleast 1 day of missing data
     if missing_data.days != 0:
-
+        print(f"updating missing days of data {missing_data.days}")    
         update = get_candle_data(ticker, time_frame, startDate, update_date) # gets missing data
         data = data.append(update, ignore_index=True)           # appends new data to previously loaded 
         data.reset_index(drop=True)                             # reindexes dataframe because missing data indexes start with 1 again
 
-        pickle.dump(data, open(filepath, "wb"))                       # check if this works
+        pickle.dump(data, open(filepath, "wb")) 
+                             # check if this works
     else:
         print(f"no mising data for {ticker}")
 
@@ -134,25 +136,23 @@ def main():
     root = Path(".")    # set root for filepath to current directory
 
     # start date
-    s_day = 2
-    s_month = 1
-    s_year = 2020
-    # binance script date format is american that's why date and month are on reverse place
-    startDate = datetime.datetime(s_year,s_day, s_month)
+    s_day = 21
+    s_month = 12
+    s_year = 2018
+    startDate = datetime.datetime(s_year, s_month , s_day)
 
     candle_interval = "1D"                          # [15min, 30min, 1h, 4h, 6h, 1D]
     ticker = "BTCUSDT"
 
     # end date
-    e_day = 2
-    e_month = 5
-    e_year = 2020
-    # this is my own parameter that's why month and day are on correct places
+    e_day = 21
+    e_month = 1
+    e_year = 2019
     endDate = datetime.datetime(e_year, e_month, e_day)
     
     # ----------------------------------------------------------------------------------------------------------------------
     # data path where we want to have data
-    data_path = f"{root}/data/{ticker}_{candle_interval}.p"     
+    data_path = f"{root}/data_test/{ticker}_{candle_interval}.p"     
 
     # get data
     daily_data = get_candle_data(time_interval=candle_interval,symbol=ticker, start_date=startDate, end_date=endDate)
@@ -160,12 +160,12 @@ def main():
     #  dumps downloaded data into file
     pickle.dump(daily_data, open(data_path,"wb"))     # "ab" -> appends to the end of the file if it exists, if not it creates a new file
 
+    print("data loaded------------------------------")
     
-    up_date = datetime.datetime(2020,8,31)                      # date to where we want to update data
+    up_date = datetime.datetime(2020,7,31)                      # date to where we want to update data
     update_candle_data(data_path, ticker, update_date=up_date)  # update data function call
 
-    # new variable with all data 
-    updated_data = pickle.load(open(data_path, "rb"))
+    updated_data = pickle.load(open(data_path, "rb") )
     
     # ------------------------------------------------------------------------------------------------------------------------
 
@@ -173,9 +173,8 @@ def main():
     for index in range(len(updated_data)):
 
         row = updated_data.loc[index].tolist()
-
-        open_date = pd.to_datetime(row[0], unit='ms').date()
-        close_date = pd.to_datetime(row[6], unit="ms").date()
+        open_date = row[0]
+        close_date = row[6]
         open_ = round(float(row[1]), 2)
         high = round(float(row[2]), 2)
         low = round(float(row[3]), 2)

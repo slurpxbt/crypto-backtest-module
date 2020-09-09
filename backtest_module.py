@@ -3,26 +3,27 @@ import datetime
 from pathlib import Path
 import pickle
 import os
-
+import time
 
 def main():
 
     root = Path(".")    # set root for filepath to current directory
 
     # start date
-    s_day = 1
-    s_month = 1
-    s_year = 2020
-    # binance script date format is american that's why date and month are on reverse place
-    startDate = datetime.datetime(s_year,s_day, s_month)
+    s_day = 21
+    s_month = 8
+    s_year = 2017
 
-    candle_interval = "1D"                          # [15min, 30min, 1h, 4h, 6h, 1D]
+    startDate = datetime.datetime(s_year,s_month, s_day)
+    candle_intervals = ["1min", "3min", "5min", "15min", "30min", "1h", "4h", "6h", "1D"]                          # ["1min", "3min", "5min", "15min", "30min", "1h", "4h", "6h", "1D"]
     tickers = ["BTCUSDT", "ETHUSDT"]
 
     
     load_update_tickers = True                             # load/update tickers
-    ticker_update_date = datetime.datetime.today()  # update data until this date
+    #ticker_update_date = datetime.datetime.today()  # update data until this date
 
+   
+    # if we want to load or update tickers
     if load_update_tickers == True:
         
         # check if directory for data exists -> if not it creates it
@@ -30,28 +31,36 @@ def main():
             os.mkdir(f"{root}/data")
         else:
             pass
-
+        
+        # load or update every ticker in tickers list
         for ticker in tickers:
+            for candle_interval in candle_intervals:
+                start = time.time()
+                # data path where we want to have data
+                data_path = f"{root}/data/{ticker}_{candle_interval}.p"     
+                # ----------------------------------------------------------------------------------------------------------------------
 
-            # data path where we want to have data
-            data_path = f"{root}/data/{ticker}_{candle_interval}.p"     
-            # ----------------------------------------------------------------------------------------------------------------------
+                # checks if file with ticker data already exists
+                if os.path.exists(data_path) == False:  
+                    # get data
+                    daily_data = bcd.get_candle_data(time_interval=candle_interval,symbol=ticker, start_date=startDate)
 
-            # checks if file with ticker data already exists
-            if os.path.exists(data_path) == False:  
-                # get data
-                daily_data = bcd.get_candle_data(time_interval=candle_interval,symbol=ticker, start_date=startDate)
+                    #  dumps downloaded data into file
+                    pickle.dump(daily_data, open(data_path,"wb"))
 
-                #  dumps downloaded data into file
-                pickle.dump(daily_data, open(data_path,"wb"))
+                    print(f"data load/update for {ticker} {candle_interval} took",round(time.time() - start, 2), "s")
 
-            else:
-                # if ticker file exists this just updates data
-                bcd.update_candle_data(data_path, ticker, ticker_update_date)
+                else:
+                    # if ticker file exists this just updates data
+                    bcd.update_candle_data(data_path, ticker) #, ticker_update_date)
+
+                    print(f"data load/update for {ticker} {candle_interval} took",round(time.time() - start, 2), "s")
+
+            
     else:
         pass
 
-
+    
 
 if __name__ == "__main__":
     main()
