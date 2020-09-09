@@ -18,11 +18,9 @@ def main():
     candle_intervals = ["1min", "3min", "5min", "15min", "30min", "1h", "4h", "6h", "1D"]                          # ["1min", "3min", "5min", "15min", "30min", "1h", "4h", "6h", "1D"]
     tickers = ["BTCUSDT", "ETHUSDT"]
 
-    
-    load_update_tickers = True                             # load/update tickers
-    #ticker_update_date = datetime.datetime.today()  # update data until this date
+    # load/update tickers
+    load_update_tickers = True                             
 
-   
     # if we want to load or update tickers
     if load_update_tickers == True:
         
@@ -48,13 +46,13 @@ def main():
                     #  dumps downloaded data into file
                     pickle.dump(daily_data, open(data_path,"wb"))
 
-                    print(f"data load/update for {ticker} {candle_interval} took",round(time.time() - start, 2), "s")
+                    print(f"data load for {ticker} {candle_interval} took",round(time.time() - start, 2), "s")
 
                 else:
                     # if ticker file exists this just updates data
                     bcd.update_candle_data(data_path, ticker) #, ticker_update_date)
 
-                    print(f"data load/update for {ticker} {candle_interval} took",round(time.time() - start, 2), "s")
+                    print(f"data update for {ticker} {candle_interval} took",round(time.time() - start, 2), "s")
 
             
     else:
