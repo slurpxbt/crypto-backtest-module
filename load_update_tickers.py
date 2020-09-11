@@ -53,8 +53,6 @@ def main():
                     # atleast 3 days of data needs to be missing 
                     bcd.update_candle_data(data_path, ticker)
                     print(f"data update for {ticker} {candle_interval} took",round(time.time() - start, 2), "s")
-
-            
     else:
         pass
 
