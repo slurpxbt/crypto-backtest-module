@@ -51,8 +51,9 @@ def get_candle_data(symbol="BTCUSDT", time_interval="1D", start_date=datetime.da
 
 
     # returns = [open_time, open, high, low, close, volumem, close_time, quote_asset_volume, number_of_trades, taker_buy_base_asset_volume, taker_buy_quote_asset_volume]
+
     candle_data  = client.get_historical_klines(symbol=symbol, interval=kline_interval, start_str=start_date.strftime("%Y/%d/%m"))
-    
+
     # creates dataframe from list of lists
     candle_data_df = pd.DataFrame(candle_data, columns=["open_time", "open", "high", "low", "close", "volume", "close_time", "quote_asset_volume", "number_of_trades", "taker_buy_base_asset_volume", "taker_buy_quote_asset_volume", "ignore"])
 
@@ -77,10 +78,11 @@ def get_candle_data(symbol="BTCUSDT", time_interval="1D", start_date=datetime.da
     else:
         pass
 
+
     return candle_data_df
 
 
-def update_candle_data(filepath, ticker,update_date=datetime.datetime.today(), info=True):
+def update_candle_data(filepath, ticker,update_date=datetime.datetime.today()):
     """
         params:
             filepath   : string - path to the file 
@@ -94,7 +96,7 @@ def update_candle_data(filepath, ticker,update_date=datetime.datetime.today(), i
     root = Path(".")                                            # set root for filepath to current directory
     intervals = ["1min", "3min", "5min", "15min", "30min", "1h", "4h", "6h", "1D"]      # possible time intervals
 
-
+ 
     # checks the file name and finds the data time_frame
     for i in intervals:
         if i in filepath:
@@ -112,15 +114,16 @@ def update_candle_data(filepath, ticker,update_date=datetime.datetime.today(), i
     startDate = datetime.datetime(new_date.year, new_date.month, new_date.day)
 
 
+
     # updates data if there is atleast 1 day of missing data
     if missing_data.days != 0:
         print(f"updating missing days of data {missing_data.days}")    
         update = get_candle_data(ticker, time_frame, startDate, update_date) # gets missing data
-        data = data.append(update, ignore_index=True)           # appends new data to previously loaded 
-        data.reset_index(drop=True)                             # reindexes dataframe because missing data indexes start with 1 again
+        data = data.append(update, ignore_index=True)                       # appends new data to previously loaded 
+        data.reset_index(drop=True)                                         # reindexes dataframe because missing data indexes start with 1 again
 
-        pickle.dump(data, open(filepath, "wb")) 
-                             # check if this works
+
+        pickle.dump(data, open(filepath, "wb")) # check if this works
     else:
         print(f"no mising data for {ticker}")
 
@@ -145,9 +148,9 @@ def main():
     ticker = "BTCUSDT"
 
     # end date
-    e_day = 21
-    e_month = 1
-    e_year = 2019
+    e_day = 9
+    e_month = 9
+    e_year = 2020
     endDate = datetime.datetime(e_year, e_month, e_day)
     
     # ----------------------------------------------------------------------------------------------------------------------

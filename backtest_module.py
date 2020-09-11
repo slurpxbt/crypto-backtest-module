@@ -15,7 +15,7 @@ def main():
     s_year = 2017
 
     startDate = datetime.datetime(s_year,s_month, s_day)
-    candle_intervals = ["1min", "3min", "5min", "15min", "30min", "1h", "4h", "6h", "1D"]                          # ["1min", "3min", "5min", "15min", "30min", "1h", "4h", "6h", "1D"]
+    candle_intervals = ["1min", "3min", "5min", "15min", "30min", "1h", "4h", "6h", "1D"]  # ["1min", "3min", "5min", "15min", "30min", "1h", "4h", "6h", "1D"]
     tickers = ["BTCUSDT", "ETHUSDT"]
 
     # load/update tickers
@@ -38,6 +38,8 @@ def main():
                 data_path = f"{root}/data/{ticker}_{candle_interval}.p"     
                 # ----------------------------------------------------------------------------------------------------------------------
 
+                
+
                 # checks if file with ticker data already exists
                 if os.path.exists(data_path) == False:  
                     # get data
@@ -45,20 +47,18 @@ def main():
 
                     #  dumps downloaded data into file
                     pickle.dump(daily_data, open(data_path,"wb"))
-
                     print(f"data load for {ticker} {candle_interval} took",round(time.time() - start, 2), "s")
 
                 else:
-                    # if ticker file exists this just updates data
-                    bcd.update_candle_data(data_path, ticker) #, ticker_update_date)
-
+                    # atleast 3 days of data needs to be missing 
+                    bcd.update_candle_data(data_path, ticker)
                     print(f"data update for {ticker} {candle_interval} took",round(time.time() - start, 2), "s")
 
             
     else:
         pass
 
-    
+
 
 if __name__ == "__main__":
     main()
