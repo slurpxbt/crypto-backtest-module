@@ -5,6 +5,7 @@ import pickle
 import os
 import time
 
+
 def main():
 
     root = Path(".")    # set root for filepath to current directory
@@ -15,10 +16,11 @@ def main():
     s_year = 2017
 
     startDate = datetime.datetime(s_year,s_month, s_day)
+    startDate = f"{s_month}-{s_day}-{s_year}"
     candle_intervals = ["1min", "3min", "5min", "15min", "30min", "1h", "4h", "6h", "1D"]  # ["1min", "3min", "5min", "15min", "30min", "1h", "4h", "6h", "1D"]
     tickers = ["BTCUSDT", "ETHUSDT"]
 
-    # load/update tickers
+    # load/update tickers|
     load_update_tickers = True                             
 
     # if we want to load or update tickers
@@ -50,9 +52,10 @@ def main():
                     print(f"data load for {ticker} {candle_interval} took",round(time.time() - start, 2), "s")
 
                 else:
-                    # atleast 3 days of data needs to be missing 
+                    # atleast 3 days of data needs to be missing
                     bcd.update_candle_data(data_path, ticker)
                     print(f"data update for {ticker} {candle_interval} took",round(time.time() - start, 2), "s")
+
     else:
         pass
 

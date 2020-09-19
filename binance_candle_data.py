@@ -5,7 +5,7 @@ import datetime
 import time
 from pathlib import Path
 
-def get_candle_data(symbol="BTCUSDT", time_interval="1D", start_date=datetime.datetime(2020,1,1) , end_date=None):
+def get_candle_data(symbol="BTCUSDT", time_interval="1D", start_date=datetime.datetime.today() , end_date=None):
     """
         this function cannot get binance futures data\n
         it should be used only the first time, then you should use update_candle_data() function instead\n
@@ -16,7 +16,12 @@ def get_candle_data(symbol="BTCUSDT", time_interval="1D", start_date=datetime.da
             end_date     : datetime.datetime -> until when we want to collect data
     """
     # 
-    
+    # ameriški format datuma rab binance
+    #end_check = datetime.datetime.strptime(end_date, '%m-%d-%y')
+    #start_check = datetime.datetime.strptime(start_date, '%m-%d-%y')
+    print(start_date)
+    print(end_date)
+
     # checks if end date is before start date
     if end_date != None:
         if start_date > end_date and end_date:
@@ -50,9 +55,11 @@ def get_candle_data(symbol="BTCUSDT", time_interval="1D", start_date=datetime.da
         kline_interval = Client.KLINE_INTERVAL_1DAY
 
 
-    # returns = [open_time, open, high, low, close, volumem, close_time, quote_asset_volume, number_of_trades, taker_buy_base_asset_volume, taker_buy_quote_asset_volume]
+    # date conversion in american format
+    startDate = f"{start_date.month}-{start_date.day}-{start_date.year}"
 
-    candle_data  = client.get_historical_klines(symbol=symbol, interval=kline_interval, start_str=start_date.strftime("%Y/%d/%m"))
+    candle_data = client.get_historical_klines(symbol=symbol, interval=kline_interval, start_str=startDate)
+
 
     # creates dataframe from list of lists
     candle_data_df = pd.DataFrame(candle_data, columns=["open_time", "open", "high", "low", "close", "volume", "close_time", "quote_asset_volume", "number_of_trades", "taker_buy_base_asset_volume", "taker_buy_quote_asset_volume", "ignore"])
@@ -75,14 +82,16 @@ def get_candle_data(symbol="BTCUSDT", time_interval="1D", start_date=datetime.da
     # row drops
     if end_date != None:
         candle_data_df.drop(candle_data_df[candle_data_df["open_time"] > end_date].index, inplace=True) # drops rows which are after the specified end date
+        print("dropped data")
     else:
+        print("data drop skipped")
         pass
 
 
     return candle_data_df
 
 
-def update_candle_data(filepath, ticker,update_date=datetime.datetime.today()):
+def update_candle_data(filepath, ticker, update_date=datetime.datetime.today()):
     """
         params:
             filepath   : string - path to the file 
@@ -96,7 +105,6 @@ def update_candle_data(filepath, ticker,update_date=datetime.datetime.today()):
     root = Path(".")                                            # set root for filepath to current directory
     intervals = ["1min", "3min", "5min", "15min", "30min", "1h", "4h", "6h", "1D"]      # possible time intervals
 
- 
     # checks the file name and finds the data time_frame
     for i in intervals:
         if i in filepath:
@@ -114,18 +122,16 @@ def update_candle_data(filepath, ticker,update_date=datetime.datetime.today()):
     startDate = datetime.datetime(new_date.year, new_date.month, new_date.day)
 
 
-
     # updates data if there is atleast 1 day of missing data
     if missing_data.days != 0:
         print(f"updating missing days of data {missing_data.days}")    
-        update = get_candle_data(ticker, time_frame, startDate, update_date) # gets missing data
-        data = data.append(update, ignore_index=True)                       # appends new data to previously loaded 
-        data.reset_index(drop=True)                                         # reindexes dataframe because missing data indexes start with 1 again
+        update = get_candle_data(ticker, time_frame, startDate, update_date)    # gets missing data
+        data = data.append(update, ignore_index=True)                           # appends new data to previously loaded
+        data.reset_index(drop=True)                                             # reindexes dataframe because missing data indexes start with 1 again
 
-
-        pickle.dump(data, open(filepath, "wb")) # check if this works
+        pickle.dump(data, open(filepath, "wb"))
     else:
-        print(f"no mising data for {ticker}")
+        print(f"no missing data for {ticker}")
 
 
 
@@ -139,19 +145,21 @@ def main():
     root = Path(".")    # set root for filepath to current directory
 
     # start date
-    s_day = 21
-    s_month = 12
+    s_day = 1
+    s_month = 1
     s_year = 2018
     startDate = datetime.datetime(s_year, s_month , s_day)
+    #startDate = f"{s_month}-{s_day}-{s_year}"
 
     candle_interval = "1D"                          # [15min, 30min, 1h, 4h, 6h, 1D]
     ticker = "BTCUSDT"
 
     # end date
-    e_day = 9
-    e_month = 9
-    e_year = 2020
+    e_day = 13
+    e_month = 12
+    e_year = 2019
     endDate = datetime.datetime(e_year, e_month, e_day)
+    #endDate = f"{e_month}-{e_day}-{e_year}"
     
     # ----------------------------------------------------------------------------------------------------------------------
     # data path where we want to have data
@@ -163,9 +171,10 @@ def main():
     #  dumps downloaded data into file
     pickle.dump(daily_data, open(data_path,"wb"))     # "ab" -> appends to the end of the file if it exists, if not it creates a new file
 
-    print("data loaded------------------------------")
+    print("data loaded------------------------------------------------------------")
     
-    up_date = datetime.datetime(2020,7,31)                      # date to where we want to update data
+    up_date = datetime.datetime(2020, 1, 1)                      # date to where we want to update data
+    #up_date =  f"{9}-{15}-{2020}"
     update_candle_data(data_path, ticker, update_date=up_date)  # update data function call
 
     updated_data = pickle.load(open(data_path, "rb") )
