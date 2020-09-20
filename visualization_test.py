@@ -9,29 +9,24 @@ import matplotlib.pyplot as plt
 from mpl_finance import candlestick_ohlc
 import matplotlib.dates as mpdates
 
+import binance_candle_data as bcd
+
 # pandas display, pycharm otherwise doesn't display all columns
 pd.set_option('display.max_columns', 40)
 desired_width = 500
 pd.set_option('display.width', desired_width)
 # ------------------------------------------------------------
-
-
-def get_data_by_date(ticker, time_frame, start_date, end_date):
-    root = Path(".")
-    file_path = f"{root}/data/{ticker}_{time_frame}.p"
-    data = pickle.load(open(file_path, "rb"))
-    data_df = pd.DataFrame(data)
-
-    data_df.drop(data_df[data_df["open_time"] < start_date].index, inplace=True)  # drops rows which are before specified start date
-    data_df.drop(data_df[data_df["open_time"] > end_date].index, inplace=True)  # drops rows which are after the specified end date
-    data_df.reset_index(drop=True)
-    print(data_df)
-    return data_df
+# root for file directory
+root = Path(".")
+# ------------------------------------------------------------
 
 
 # DATA VARIABLES ----------------------------------------------
 ticker = "BTCUSDT"
 time_frame = "1D"
+
+# file path
+file_path = f"{root}/data/{ticker}_{time_frame}.p"
 
 # start date of backtest
 startDate = datetime.datetime(2020, 6, 1)
@@ -39,7 +34,7 @@ startDate = datetime.datetime(2020, 6, 1)
 endDate = datetime.datetime(2020, 9, 1)
 # -------------------------------------------------------------
 
-backtest_data = get_data_by_date(ticker, time_frame, startDate, endDate)
+backtest_data = bcd.get_data_by_date(startDate, endDate, file_path)
 backtest_data["candle pct gain"] = round((backtest_data["close"]/backtest_data["open"]-1)*100, 3)
 
 

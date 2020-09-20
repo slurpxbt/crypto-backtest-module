@@ -1,3 +1,6 @@
+#######################
+# Author: slurpxbt
+#######################
 import binance_candle_data as bcd
 import datetime
 from pathlib import Path

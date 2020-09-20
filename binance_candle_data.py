@@ -1,3 +1,6 @@
+#######################
+# Author: slurpxbt
+#######################
 from binance.client import Client
 import pandas as pd
 import pickle
@@ -134,10 +137,26 @@ def update_candle_data(filepath, ticker, update_date=datetime.datetime.today()):
         print(f"no missing data for {ticker}")
 
 
+def get_data_by_date(start_date, end_date, file_path):
+    """
+        params:
+            start_date: datetime.datetime -> start date from when you want to select data
+            end_date: datetime.datetime -> end date to where you want your data to be selected
+            filepath: string -> path to your data file
+    """
 
+
+    data = pickle.load(open(file_path, "rb"))   # load data
+    data_df = pd.DataFrame(data)                # convert data to dataframe
+
+    data_df.drop(data_df[data_df["open_time"] < start_date].index, inplace=True)  # drops rows which are before specified start date
+    data_df.drop(data_df[data_df["open_time"] > end_date].index, inplace=True)  # drops rows which are after the specified end date
+    data_df.reset_index(drop=True)  # reindex data
+
+    return data_df
 
 ###########################################################################################################
-# mainj function is meant just for testing purposes when developing new functions and testing current ones
+# main function is meant just for testing purposes when developing new functions and testing current ones
 ###########################################################################################################
 
 def main():
@@ -149,7 +168,6 @@ def main():
     s_month = 1
     s_year = 2018
     startDate = datetime.datetime(s_year, s_month , s_day)
-    #startDate = f"{s_month}-{s_day}-{s_year}"
 
     candle_interval = "1D"                          # [15min, 30min, 1h, 4h, 6h, 1D]
     ticker = "BTCUSDT"
@@ -159,7 +177,6 @@ def main():
     e_month = 12
     e_year = 2019
     endDate = datetime.datetime(e_year, e_month, e_day)
-    #endDate = f"{e_month}-{e_day}-{e_year}"
     
     # ----------------------------------------------------------------------------------------------------------------------
     # data path where we want to have data
@@ -169,12 +186,11 @@ def main():
     daily_data = get_candle_data(time_interval=candle_interval,symbol=ticker, start_date=startDate, end_date=endDate)
 
     #  dumps downloaded data into file
-    pickle.dump(daily_data, open(data_path,"wb"))     # "ab" -> appends to the end of the file if it exists, if not it creates a new file
+    pickle.dump(daily_data, open(data_path,"wb"))
 
     print("data loaded------------------------------------------------------------")
     
     up_date = datetime.datetime(2020, 1, 1)                      # date to where we want to update data
-    #up_date =  f"{9}-{15}-{2020}"
     update_candle_data(data_path, ticker, update_date=up_date)  # update data function call
 
     updated_data = pickle.load(open(data_path, "rb") )
