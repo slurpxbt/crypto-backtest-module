@@ -15,10 +15,7 @@ pd.set_option('display.width', desired_width)
 
 root = Path(".")
 
-
-
-
-def market_weekly_H_L_stats(start_date, end_date, filepath, ticker):
+def market_daily_H_L_stats(start_date, end_date, filepath, ticker):
 
     # data format [open_time, open, high, low, close, volume, close_time, number_of_trades]
     data = bcd.get_data_by_date(start_date, end_date, file_path).values.tolist()
@@ -66,12 +63,6 @@ def market_weekly_H_L_stats(start_date, end_date, filepath, ticker):
                 week_min = day
                 week_min_prc = day[3]   # set new low price to current price
 
-        # if len(week_max) > 0 and len(week_min) > 0:
-        #     print("year", week_max[0].isocalendar()[0])
-        #     print("week", week_max[0].isocalendar()[1])
-        #     print("high price", week_max[2],"day", week_max[0].isocalendar()[2])
-        #     print("low price", week_min[3], "day", week_min[0].isocalendar()[2])
-        #     print("-"*100)
 
         max_days.append(week_max)
         min_days.append(week_min)
@@ -104,8 +95,6 @@ def market_weekly_H_L_stats(start_date, end_date, filepath, ticker):
     for i in days_min:
         sum_min = sum_min + len(i)
 
-    #print(sum_max)
-    #print(sum_min)
 
     day_dict = {0:"mon", 1:"tue", 2:"wed", 3:"thu", 4:"fri", 5:"sat", 6:"sun"}
 
@@ -123,16 +112,159 @@ def market_weekly_H_L_stats(start_date, end_date, filepath, ticker):
         print(f"chance of low on {day} is {round(pct_chance_high, 2)}%")
 
 
-ticker = "BTCUSDT"
-time_frame = "1D"
-file_path = f"{root}/data/{ticker}_{time_frame}.p"
-start_date = datetime.datetime(2020, 5, 1)
-end_date = datetime.datetime(2020, 9, 1)
 
-market_weekly_H_L_stats(start_date, end_date, file_path, ticker)
+
+def hourly_H_L_distribution(star_date, end_date, filepath, ticker):
+
+    # data format [open_time, open, high, low, close, volume, close_time, number_of_trades]
+    data = bcd.get_data_by_date(start_date, end_date, file_path).values.tolist()
+    # calculates how many years of data we have
+    year_no = end_date.year - start_date.year
+
+
+    if year_no != 0:
+        # if year difference is one create values for both years,
+        years = range(start_date.year, start_date.year + year_no + 1, 1)
+    else:
+        # if year difference is 0, only value is current year
+        years = [end_date.year]
+
+
+
+    weekly_data = []
+
+    for year in years:  # for each year and each week and each day of the week compare data
+        for i in range(1, 53,1):
+            week = []
+            for day in range(1,8,1):
+                tmp_day = []
+                for j in range(len(data)):
+                    # if year and week are the as in for loops append daily data to week list
+                    if data[j][0].isocalendar()[1] == i and data[j][0].isocalendar()[0] == year and data[j][0].isocalendar()[2] == day:
+                        tmp_day.append(data[j])     # appends data to current day list
+
+                week.append(tmp_day)    # appends day to the week
+
+            # append week data to weekly data list
+            weekly_data.append(week)
+
+    weekday_highs = [[], [], [], [], [], [], []]
+    weekday_lows = [[], [], [], [], [], [], []]
+    for week in weekly_data:
+        for day in week:
+            daily_high = 0
+            daily_low = 1000000
+
+            daily_high_tmp = []
+            daily_low_tmp = []
+
+            for trade in day:
+                if daily_high < trade[2]:   # finds the daily high  trade[2]=high
+                    daily_high = trade[2]
+                    daily_high_tmp = trade
+
+                if daily_low > trade[3]:    # finds the daily low  trade[3]=low
+                    daily_low = trade[3]
+                    daily_low_tmp = trade
+
+            if len(daily_high_tmp) > 0 and len(daily_low_tmp) > 0:  # if list is not empty
+
+                weekday_highs[daily_high_tmp[0].isocalendar()[2] - 1].append(daily_high_tmp)    # appends trades that contains high for specific day at it's day index
+                weekday_lows[daily_low_tmp[0].isocalendar()[2]-1].append(daily_low_tmp)         # appends trades that contains low for specific day at it's day index
+
+    # empty list for data that will be used for stats
+    weekday_high_stats = [[], [], [], [], [], [], []]
+    weekday_low_stats = [[], [], [], [], [], [], []]
+
+
+    counter = 1
+    for day in weekday_highs:
+        # for each day create list of 24h for trades
+        daily_highs = [[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []]
+        for high in day:
+            daily_highs[high[0].hour].append(high)  # appends trade that contains high to it's corresponding hour in daily_highs list
+
+        weekday_high_stats[counter-1].append(daily_highs)   # appends day to the week
+        counter += 1
+
+
+    counter = 1
+    for day in weekday_lows:
+        daily_lows = [[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []]
+        for low in day:
+            daily_lows[low[0].hour].append(low)  # appends trade that contains low to it's corresponding hour in daily_lows list
+
+        weekday_low_stats[counter-1].append(daily_lows) # appends day to the week
+        counter += 1
+
+
+
+    day_dict = {0: "mon", 1: "tue", 2: "wed", 3: "thu", 4: "fri", 5: "sat", 6: "sun"}
+
+    for day in range(len(weekday_high_stats)):
+        daily_sum = 0
+        for hour in weekday_high_stats[day]:
+            for trades in hour:
+                daily_sum += len(trades)    # calculates sum for easier % calculation
+
+        print("-" * 100)
+        print("timespan=", start_date.date(), "->", end_date.date(), "ticker=", ticker)
+        h_count = 0
+        for hour in range(len(weekday_high_stats[day])):
+            for trades in weekday_high_stats[day][hour]:
+                len_trd = len(trades)
+
+                print(f"chance of high on {day_dict[day]} at hour {h_count} is:", round((len_trd/daily_sum)*100,2), "%")
+                h_count +=1
+
+        print("-"*100)
+
+    for day in range(len(weekday_low_stats)):
+        daily_sum = 0
+        for hour in weekday_low_stats[day]:
+            for trades in hour:
+                daily_sum += len(trades)     # calculates sum for easier % calculation
+
+        print("-" * 100)
+        print("timespan=", start_date.date(), "->", end_date.date(), "ticker=", ticker)
+        h_count = 0
+        for hour in range(len(weekday_low_stats[day])):
+            for trades in weekday_low_stats[day][hour]:
+                len_trd = len(trades)
+
+                print(f"chance of low on {day_dict[day]} at hour {h_count} is:", round((len_trd / daily_sum) * 100, 2), "%")
+                h_count += 1
+
+    print("-" * 100)
+
+
+
+ticker = "BTCUSDT"
+time_frame = "1h"
+file_path = f"{root}/data/{ticker}_{time_frame}.p"
+start_date = datetime.datetime(2020, 1, 1)
+end_date = datetime.datetime(2020, 9, 20)
+
+market_daily_H_L_stats(start_date, end_date, file_path, ticker)
 
 print("-"*100)
 
 ticker = "ETHUSDT"
 file_path = f"{root}/data/{ticker}_{time_frame}.p"
-market_weekly_H_L_stats(start_date, end_date, file_path, ticker)
+market_daily_H_L_stats(start_date, end_date, file_path, ticker)
+
+
+
+
+print("-" * 100)
+
+time_frame = "1h"
+ticker="BTCUSDT"
+file_path = f"{root}/data/{ticker}_{time_frame}.p"
+
+hourly_H_L_distribution(start_date, end_date, file_path, ticker)
+
+ticker="ETHUSDT"
+file_path = f"{root}/data/{ticker}_{time_frame}.p"
+
+hourly_H_L_distribution(start_date, end_date, file_path, ticker)
