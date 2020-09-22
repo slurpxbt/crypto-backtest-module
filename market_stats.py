@@ -5,6 +5,7 @@ import binance_candle_data as bcd
 from pathlib import Path
 import pandas as pd
 import datetime
+import matplotlib.pyplot as plt
 import pickle
 
 # pandas display, pycharm otherwise doesn't display all columns
@@ -114,10 +115,10 @@ def market_daily_H_L_stats(start_date, end_date, filepath, ticker):
 
 
 
-def hourly_H_L_distribution(star_date, end_date, filepath, ticker):
+def hourly_H_L_distribution(start_date, end_date, filepath, ticker):
 
     # data format [open_time, open, high, low, close, volume, close_time, number_of_trades]
-    data = bcd.get_data_by_date(start_date, end_date, file_path).values.tolist()
+    data = bcd.get_data_by_date(start_date, end_date, filepath).values.tolist()
     # calculates how many years of data we have
     year_no = end_date.year - start_date.year
 
@@ -214,10 +215,27 @@ def hourly_H_L_distribution(star_date, end_date, filepath, ticker):
             for trades in weekday_high_stats[day][hour]:
                 len_trd = len(trades)
 
-                print(f"chance of high on {day_dict[day]} at hour {h_count} is:", round((len_trd/daily_sum)*100,2), "%")
-                h_count +=1
+                current_day = day_dict[day]
+                chance_of_high = round((len_trd/daily_sum)*100, 2)
 
-        print("-"*100)
+                print(f"chance of high on {current_day} at hour {h_count} is:", chance_of_high, "%")
+                h_count += 1
+
+                # visualization
+                text_str = f"{chance_of_high}%"
+                plt.bar(h_count-1, chance_of_high, width=0.5)
+                plt.text(h_count - 1.25, chance_of_high + 0.25,text_str)
+
+            plt.title(f"chance of high on {current_day} for {ticker} in timespan {start_date.date()} -> {end_date.date()}")
+            plt.xlabel("hour")
+            plt.ylabel("%")
+            plt.xticks(range(0,24,1))
+            plt.grid(alpha=0.3)
+            figMan = plt.get_current_fig_manager()
+            figMan.window.showMaximized()
+            plt.show()
+
+            print("-"*100)
 
     for day in range(len(weekday_low_stats)):
         daily_sum = 0
@@ -232,8 +250,24 @@ def hourly_H_L_distribution(star_date, end_date, filepath, ticker):
             for trades in weekday_low_stats[day][hour]:
                 len_trd = len(trades)
 
-                print(f"chance of low on {day_dict[day]} at hour {h_count} is:", round((len_trd / daily_sum) * 100, 2), "%")
+                current_day = day_dict[day]
+                chance_of_low = round((len_trd / daily_sum) * 100, 2)
+
+                print(f"chance of low on {current_day} at hour {h_count} is:", chance_of_low, "%")
                 h_count += 1
+                # visualization
+                text_str = f"{chance_of_low}%"
+                plt.bar(h_count-1, chance_of_low, width=0.5)
+                plt.text(h_count - 1.25, chance_of_low + 0.25, text_str)
+
+            plt.title(f"chance of low on {current_day} for {ticker} in timespan {start_date.date()} -> {end_date.date()}")
+            plt.xlabel("hour")
+            plt.ylabel("%")
+            plt.xticks(range(0, 24, 1))
+            plt.grid(alpha=0.3)
+            figMan = plt.get_current_fig_manager()
+            figMan.window.showMaximized()
+            plt.show()
 
     print("-" * 100)
 
