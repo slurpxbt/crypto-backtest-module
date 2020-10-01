@@ -17,7 +17,7 @@ pd.set_option('display.width', desired_width)
 
 root = Path(".")
 
-def market_daily_H_L_stats(start_date, end_date, file_path, ticker):
+def market_daily_H_L_distribution(start_date, end_date, file_path, ticker):
 
     # data format [open_time, open, high, low, close, volume, close_time, number_of_trades]
     data = bcd.get_data_by_date(start_date, end_date, file_path).values.tolist()
@@ -481,7 +481,7 @@ for ticker in tickers:
         candle_range = 30
         file_path = f"{root}/data/{ticker}_{time_frame}.p"
 
-        market_daily_H_L_stats(start_date, end_date, file_path, ticker)
+        market_daily_H_L_distribution(start_date, end_date, file_path, ticker)
         hourly_H_L_distribution(start_date, end_date, file_path, ticker)
         candle_interval_stats(file_path, candle_range, ticker, time_frame)
         std2_prob_movingWindow(file_path, candle_range, time_frame)
