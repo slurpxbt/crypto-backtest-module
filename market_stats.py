@@ -7,6 +7,7 @@ import pandas as pd
 import datetime
 import matplotlib.pyplot as plt
 import pickle
+import numpy as np
 
 # pandas display, pycharm otherwise doesn't display all columns
 pd.set_option('display.max_columns', 100)
@@ -16,7 +17,7 @@ pd.set_option('display.width', desired_width)
 
 root = Path(".")
 
-def market_daily_H_L_stats(start_date, end_date, filepath, ticker):
+def market_daily_H_L_stats(start_date, end_date, file_path, ticker):
 
     # data format [open_time, open, high, low, close, volume, close_time, number_of_trades]
     data = bcd.get_data_by_date(start_date, end_date, file_path).values.tolist()
@@ -113,12 +114,10 @@ def market_daily_H_L_stats(start_date, end_date, filepath, ticker):
         print(f"chance of low on {day} is {round(pct_chance_high, 2)}%")
 
 
-
-
-def hourly_H_L_distribution(start_date, end_date, filepath, ticker):
+def hourly_H_L_distribution(start_date, end_date, file_path, ticker):
 
     # data format [open_time, open, high, low, close, volume, close_time, number_of_trades]
-    data = bcd.get_data_by_date(start_date, end_date, filepath).values.tolist()
+    data = bcd.get_data_by_date(start_date, end_date, file_path).values.tolist()
     # calculates how many years of data we have
     year_no = end_date.year - start_date.year
 
@@ -202,6 +201,7 @@ def hourly_H_L_distribution(start_date, end_date, filepath, ticker):
 
     day_dict = {0: "mon", 1: "tue", 2: "wed", 3: "thu", 4: "fri", 5: "sat", 6: "sun"}
 
+    #HIGHS
     for day in range(len(weekday_high_stats)):
         daily_sum = 0
         for hour in weekday_high_stats[day]:
@@ -237,6 +237,8 @@ def hourly_H_L_distribution(start_date, end_date, filepath, ticker):
 
             print("-"*100)
 
+
+    # LOWS
     for day in range(len(weekday_low_stats)):
         daily_sum = 0
         for hour in weekday_low_stats[day]:
@@ -272,33 +274,217 @@ def hourly_H_L_distribution(start_date, end_date, filepath, ticker):
     print("-" * 100)
 
 
+def candle_interval_stats(file_path, candle_range, ticker, time_frame):
+    # format = [open_time, open, high, low, close, volume, close_time, number_of_trades]
+    ticker_data = bcd.get_data_by_date(start_date, end_date, file_path)
+    candle_data = ticker_data.values.tolist()
 
-ticker = "BTCUSDT"
-time_frame = "1h"
-file_path = f"{root}/data/{ticker}_{time_frame}.p"
+    # print(ticker_data)
+    #
+    # print(len(candle_data))
+    # print("-"* 100)
+
+    avg = []            # list for storing candle close values
+    candle_gain = []    # list for storing candle gain values
+    pct_change = []     # list for storing candle pct gains
+    ranges = []         # list for storing candle ranges
+    for i in candle_data:
+
+        if len(avg) < candle_range:
+            avg.append(i[4])            # appends candle closes
+
+            if len(avg) >= 2:   # if there are atleast 2 values in list
+
+                #print(f"avg len={len(avg)} ||| avg price of last {len(avg)} candles is {round(sum(avg) / len(avg), 2)} -> current price={avg[-1]} ||| % change [max/min] of last {len(avg)} candles=>{round((max(avg) / min(avg) - 1) * 100, 2)} ||| max={max(avg)} - min={min(avg)} ||| last candle gain/loss {round((avg[-1] / avg[-2] - 1) * 100, 2)}")
+                candle_gain.append(round((avg[-1] / avg[-2] - 1) * 100, 3))     # append last candle gain
+
+            else:
+                #print(f"avg len={len(avg)} ||| avg price of last {len(avg)} candles is {round(sum(avg) / len(avg), 2)} -> current price={avg[-1]}  ||| % change [max/min] of last {len(avg)} candles=>{round((max(avg) / min(avg) - 1) * 100, 2)} ||| max={max(avg)} - min={min(avg)}")
+                pass
+
+        if len(avg) == candle_range:        # if candle range list is full
+            pct_change.append(round((max(avg) / min(avg) - 1) * 100, 2))    # append this candle range pct range(max/min)
+            ranges.append(max(avg) - min(avg))                              # append this candle range max-min
+            candle_gain = []                                                # prepare list for next candle range gains
+            avg = []                                                        # prepare list for next candle closes
+
+    print("-" * 100)
+    print(f"{ticker} stats")
+    print(f"avg % change of {candle_range} {time_frame} candles in timespan {start_date.date()} -> {end_date.date()} =>{round(np.average(pct_change), 3)} %")
+    print(f"avg range of {candle_range} {time_frame} candles in timespan {start_date.date()} -> {end_date.date()} =>{round(np.average(ranges), 2)} $")
+    print("-" * 100)
+
+
+def std2_prob_movingWindow(file_path, candle_range, time_frame):
+
+    # format = [open_time, open, high, low, close, volume, close_time, number_of_trades]
+    ticker_data = bcd.get_data_by_date(start_date, end_date, file_path)
+    candle_data = ticker_data.values.tolist()
+
+    candle_gain = []
+    avg = []
+    std2 = []
+    double_std2 = []
+    same_dir_std2 = []
+
+    for index in range(len(candle_data)):
+        candle = candle_data[index]         # store current candle data
+
+        if len(avg) < candle_range:
+            # index 4 is candle close
+            avg.append(candle[4])       # append candle close
+
+            if len(avg) >= 2:
+                candle_gain.append(round((avg[-1] / avg[-2] - 1) * 100, 3))
+
+        if len(avg) == candle_range:
+            std = round(np.std(candle_gain), 4)     # calculates std for candles gains
+
+            # print("candle gains=>", candle_gain)
+            # print("candle gain 1std=", std, "candle gain 2std=", 2*std)
+            # print("candle gain -1std=", std * (-1), "candle gain -2std=", (2 * std) * (-1))
+            # print("-"*50, "current price", candle[4])
+
+            if index+1 < len(candle_data) and index+2 < len(candle_data):                   # check for the last candle in dataset
+                if abs(round((candle_data[index+1][4]/candle[4]-1)*100, 2)) >= (std * 2):    # if candle gain is bigger thant 2std
+
+                    # print("-"*200)
+                    # print(f"current price -> {candle[4]}, next candle -> {candle_data[index+1][4]}")
+                    # print(f"move with 2std or more -> % change {round((candle_data[index+1][4]/candle[4]-1)*100, 3)} %")
+                    # print("-" * 200)
+                    std2.append(1)      # this list is mostly used just for length that's why I append 1
+
+                    if abs(round((candle_data[index+2][4]/candle_data[index+1][4]-1)*100, 2)) >= (std * 2):  # if 2nd candle i a row has gain of more than 2std
+                        double_std2.append(1)   # this list is mostly used just for length that's why I append 1
+
+                        # print("2nd 2std MOVE IN A ROW" ,"*" * 200)
+                        # print(f"move with 2std or more -> % change {round((candle_data[index + 1][4] / candle[4] - 1) * 100, 3)} %")
+                        # print(f"current price -> {candle[4]}, next candle -> {candle_data[index + 1][4]} -> next candle -> {candle_data[index + 2][4]}")
+                        # print("*" * 200)
+
+                        if round((candle_data[index+2][4]/candle[4]-1)*100, 2) >= 0 and round((candle_data[index+1][4]/candle[4]-1)*100, 2) >= 0:   # if candle gain is positive checks if next candle is also positive
+                            same_dir_std2.append(1)     # this list is mostly used just for length that's why I append 1
+
+                        elif round((candle_data[index+2][4]/candle[4]-1)*100, 2) < 0 and round((candle_data[index+1][4]/candle[4]-1)*100, 2) < 0:   # if candle gain is negative checks if next candle is also negative
+                            same_dir_std2.append(1)     # this list is mostly used just for length that's why I append 1
+
+            # removes first element since this is moving window
+            candle_gain.pop(0)
+            avg.pop(0)
+
+    # results
+    print("-" * 100)
+    print(f"timespan {start_date.date()} -> {end_date.date()}")
+    print(f"chance of 2nd 2std move when first 2std happens for {time_frame} and candle range {candle_range} is {round((len(double_std2)/len(std2))*100, 2)} %")
+    print(f"chance of 2nd 2std move being in the same direction as first one is {round(len(same_dir_std2)/len(double_std2)*100, 2)} %")
+    print("-" * 100)
+
+
+def triple_sdt1_prob_movingWindow(file_path, candle_range, time_frame):
+
+    # format = [open_time, open, high, low, close, volume, close_time, number_of_trades]
+    ticker_data = bcd.get_data_by_date(start_date, end_date, file_path)
+    candle_data = ticker_data.values.tolist()
+
+    candle_gain = []
+    avg = []
+
+    std1 = []
+    double_std1 = []
+    same_dir_std1 = []
+    triple_std1 = []
+    double_same_dir_std1 = []
+
+    for index in range(len(candle_data)):
+
+        candle = candle_data[index]
+
+        if len(avg) < candle_range:
+            # index 4 is candle close
+            avg.append(candle[4])
+
+            if len(avg) >= 2:
+                candle_gain.append(round((avg[-1] / avg[-2] - 1) * 100, 3))
+
+        if len(avg) == candle_range:
+
+            std = round(np.std(candle_gain), 4)     # calculates std of candle gains
+
+            # print("candle gains=>", candle_gain)
+            # print("candle gain 1std=", std, "candle gain 2std=", 2*std)
+            # print("candle gain -1std=", std * (-1), "candle gain -2std=", (2 * std) * (-1))
+            # print("-"*50, "current price", candle[4])
+
+            if index+1 < len(candle_data) and index+2 < len(candle_data) and index+3 < len(candle_data):    # check for last candles in dataset
+                # triple std1 move
+                if abs(round((candle_data[index + 1][4] / candle[4] - 1) * 100, 2)) >= std:     # if candle gain is bigger than 1std
+
+                    # print("-" * 200)
+                    # print(f"current price -> {candle[4]}, next candle -> {candle_data[index + 1][4]}")
+                    # print(f"move with 1std or more -> % change {round((candle_data[index + 1][4] / candle[4] - 1) * 100, 3)} %")
+                    # print("-" * 200)
+
+                    std1.append(1)  # this list is mostly used just for length that's why I append 1
+
+                    if abs(round((candle_data[index + 2][4] / candle_data[index + 1][4] - 1) * 100, 2)) >= std:     # if 2nd candle also has bigger gain than 1std
+                        double_std1.append(1)   # this list is mostly used just for length that's why I append 1
+
+                        # print("2nd 1std MOVE IN A ROW", "*" * 200)
+                        # print(f"move with 1std or more -> % change {round((candle_data[index + 1][4] / candle[4] - 1) * 100, 3)} %")
+                        # print(f"current price -> {candle[4]}, next candle -> {candle_data[index + 1][4]} -> next candle -> {candle_data[index + 2][4]}")
+                        # print("*" * 200)
+
+                        # check if 1std moves are in the same direction
+                        if round((candle_data[index + 2][4] / candle[4] - 1) * 100, 2) >= 0 and round((candle_data[index + 1][4] / candle[4] - 1) * 100, 2) >= 0:
+                            same_dir_std1.append(1)     # this list is mostly used just for length that's why I append 1
+                        elif round((candle_data[index + 2][4] / candle[4] - 1) * 100, 2) < 0 and round((candle_data[index + 1][4] / candle[4] - 1) * 100, 2) < 0:
+                            same_dir_std1.append(1)     # this list is mostly used just for length that's why I append 1
+
+                        if abs(round((candle_data[index + 3][4] / candle_data[index + 2][4] - 1) * 100, 2)) >= std:     # check if third candle is 1std move
+                            triple_std1.append(1)
+                            # print("3rd 1std MOVE IN A ROW", "*_*" * 100)
+                            # print(f"move with 1std or more -> % change {round((candle_data[index + 1][4] / candle[4] - 1) * 100, 3)} %")
+                            # print(f"current price -> {candle[4]}, next candle -> {candle_data[index + 1][4]} -> next candle -> {candle_data[index + 2][4]}")
+                            # print("*_*" * 100)
+
+                            # check if 1std moves are in the same direction
+                            if round((candle_data[index + 3][4] / candle[4] - 1) * 100, 2) >= 0 and round((candle_data[index + 2][4] / candle[4] - 1) * 100, 2) >= 0:
+                                double_same_dir_std1.append(1)      # this list is mostly used just for length that's why I append 1
+                            elif round((candle_data[index + 3][4] / candle[4] - 1) * 100, 2) < 0 and round((candle_data[index + 2][4] / candle[4] - 1) * 100, 2) < 0:
+                                double_same_dir_std1.append(1)      # this list is mostly used just for length that's why I append 1
+
+            # removes first element since this is moving window
+            candle_gain.pop(0)
+            avg.pop(0)
+
+
+
+    print("-" * 100)
+    print(f"timespan {start_date.date()} -> {end_date.date()}")
+    print(f"chance of 2nd 1std move when first 1std happens for {time_frame} and candle range {candle_range} is {round((len(double_std1)/len(std1))*100, 2)} %")
+    print(f"chance of 2nd 1std move being in the same direction as first one is {round(len(same_dir_std1)/len(double_std1)*100, 2)} %")
+    print(f"chance of 3rd 1std move when 2nd 1std happens for {time_frame} and candle range {candle_range} is {round((len(triple_std1) / len(double_std1)) * 100, 2)} %")
+    print(f"chance of 3nd 1std move being in the same direction as 2nd one is {round(len(double_same_dir_std1) / len(triple_std1) * 100, 2)} %")
+    print("-" * 100)
+
+
+
+
+
 start_date = datetime.datetime(2020, 1, 1)
 end_date = datetime.datetime(2020, 9, 20)
 
-market_daily_H_L_stats(start_date, end_date, file_path, ticker)
+tickers = ["BTCUSDT", "ETHUSDT"]
+time_frames = ["1h"]
+for ticker in tickers:
+    for time_frame in time_frames:
+        candle_range = 30
+        file_path = f"{root}/data/{ticker}_{time_frame}.p"
 
-print("-"*100)
-
-ticker = "ETHUSDT"
-file_path = f"{root}/data/{ticker}_{time_frame}.p"
-market_daily_H_L_stats(start_date, end_date, file_path, ticker)
-
-
+        market_daily_H_L_stats(start_date, end_date, file_path, ticker)
+        hourly_H_L_distribution(start_date, end_date, file_path, ticker)
+        candle_interval_stats(file_path, candle_range, ticker, time_frame)
+        std2_prob_movingWindow(file_path, candle_range, time_frame)
+        triple_sdt1_prob_movingWindow(file_path, candle_range, time_frame)
 
 
-print("-" * 100)
-
-time_frame = "1h"
-ticker="BTCUSDT"
-file_path = f"{root}/data/{ticker}_{time_frame}.p"
-
-hourly_H_L_distribution(start_date, end_date, file_path, ticker)
-
-ticker="ETHUSDT"
-file_path = f"{root}/data/{ticker}_{time_frame}.p"
-
-hourly_H_L_distribution(start_date, end_date, file_path, ticker)
