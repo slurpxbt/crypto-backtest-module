@@ -102,16 +102,54 @@ def market_daily_H_L_distribution(start_date, end_date, file_path, ticker):
 
     print("timespan=", start_date.date(), "=>", end_date.date(), "-> " ,ticker)
 
+    d_count = 0     # day counter
     for index in range(len(days_max)):
         day = day_dict[index]
         pct_chance_high = (len(days_max[index])/sum_max)*100
         print(f"chance of high on {day} is {round(pct_chance_high, 2)}%")
 
+        d_count += 1
+
+
+        text_str = f"{round(pct_chance_high, 2)}%"
+        plt.bar(d_count, pct_chance_high, width=0.25)
+        plt.text(d_count - 0.1, pct_chance_high + 0.25,text_str)
+
+
+    plt.title(f"chance of high on for each day of the week for {ticker} in timespan {start_date.date()} -> {end_date.date()}")
+    plt.xlabel("day")
+    plt.ylabel("%")
+    plt.xticks(range(1,8,1))
+    plt.grid(alpha=0.3)
+    figMan = plt.get_current_fig_manager()
+    figMan.window.showMaximized()
+    plt.show()
+
+
     print("-" * 100)
+
+    d_count = 0     # day counter
     for index in range(len(days_min)):
         day = day_dict[index]
         pct_chance_high = (len(days_min[index]) / sum_max) * 100
         print(f"chance of low on {day} is {round(pct_chance_high, 2)}%")
+
+        d_count += 1
+
+
+        text_str = f"{round(pct_chance_high, 2)}%"
+        plt.bar(d_count, pct_chance_high, width=0.25)
+        plt.text(d_count - 0.1, pct_chance_high + 0.25,text_str)
+
+
+    plt.title(f"chance of low on for each day of the week for {ticker} in timespan {start_date.date()} -> {end_date.date()}")
+    plt.xlabel("day")
+    plt.ylabel("%")
+    plt.xticks(range(1,8,1))
+    plt.grid(alpha=0.3)
+    figMan = plt.get_current_fig_manager()
+    figMan.window.showMaximized()
+    plt.show()
 
 
 def hourly_H_L_distribution(start_date, end_date, file_path, ticker):
@@ -487,4 +525,15 @@ for ticker in tickers:
         std2_prob_movingWindow(file_path, candle_range, time_frame)
         triple_sdt1_prob_movingWindow(file_path, candle_range, time_frame)
 
+        print("-"*100)
+        print("NEXT TTIMEFRAME")
+        print("-"*100)
+
+
+
+    print("-"*100)
+    print("-"*100)
+    print("NEXT TICKER")
+    print("-"*100)
+    print("-"*100)
 
