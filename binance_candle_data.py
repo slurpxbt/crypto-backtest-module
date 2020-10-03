@@ -8,7 +8,7 @@ import datetime
 import time
 from pathlib import Path
 
-def get_candle_data(symbol="BTCUSDT", time_interval="1D", start_date=datetime.datetime.today() , end_date=None):
+def get_candle_data(symbol="BTCUSDT", time_interval="1D", start_date=datetime.datetime.today(), end_date=None):
     """
         this function cannot get binance futures data\n
         it should be used only the first time, then you should use update_candle_data() function instead\n
@@ -18,10 +18,6 @@ def get_candle_data(symbol="BTCUSDT", time_interval="1D", start_date=datetime.da
             start_date   : datetime.datetime -> from when to collect data
             end_date     : datetime.datetime -> until when we want to collect data
     """
-    # 
-    # ameriški format datuma rab binance
-    #end_check = datetime.datetime.strptime(end_date, '%m-%d-%y')
-    #start_check = datetime.datetime.strptime(start_date, '%m-%d-%y')
     print(start_date)
     print(end_date)
 
@@ -101,11 +97,9 @@ def update_candle_data(filepath, ticker, update_date=datetime.datetime.today()):
             ticker     : string - ticker name 
             update_date: datetime.datetime - date to where we want to update our data
     """
-    # pickle data streams are self contained
-    # you need to load as long as there are data streams and get an error
-    # this script assumes in the pickle file data is ordered and without duplicates
 
-    root = Path(".")                                            # set root for filepath to current directory
+
+    root = Path(".")                                                                    # set root for filepath to current directory
     intervals = ["1min", "3min", "5min", "15min", "30min", "1h", "4h", "6h", "1D"]      # possible time intervals
 
     # checks the file name and finds the data time_frame
@@ -173,9 +167,9 @@ def main():
     ticker = "BTCUSDT"
 
     # end date
-    e_day = 13
-    e_month = 12
-    e_year = 2019
+    e_day = 20
+    e_month = 9
+    e_year = 2020
     endDate = datetime.datetime(e_year, e_month, e_day)
     
     # ----------------------------------------------------------------------------------------------------------------------
@@ -197,7 +191,7 @@ def main():
     
     # ------------------------------------------------------------------------------------------------------------------------
 
-
+    start = time.time()
     for index in range(len(updated_data)):
 
         row = updated_data.loc[index].tolist()
@@ -211,6 +205,11 @@ def main():
         no_trades = row[7]
 
         print("open_date:", open_date, "|open:", open_, "|high:", high, "|low:", low, "|close:", close, "|close_date:", close_date, "number of trades", no_trades)
+
+
+    print("printig took ", time.time()-start, "s")
+
+
 
 if __name__ == "__main__":
     main()
