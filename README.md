@@ -25,7 +25,10 @@
    - your strategy should go below line 60
    
 3. In the template one strategy is already written so if you have any problems go trough with debbuger to see what the code is doing
-4. <b>If you have any question regarding the scripts you can ask me on twitter @slurpxbt</b>
+4. Although this is really easy to use you should know atleast some python to be able to use it
+
+<b>If you have any question regarding the scripts you can ask me on twitter @slurpxbt</b>
+
 
   
  
