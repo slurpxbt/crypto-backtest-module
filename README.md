@@ -1,5 +1,5 @@
 # crypto-backtest-module
- module for backtesting trading strategies
+ module for backtesting trading strategies based on candle data
  
  <h3>Instructions how to use the script</h3>
  
