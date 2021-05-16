@@ -18,9 +18,10 @@ def main():
     s_month = 8
     s_year = 2017
 
-    startDate = datetime.datetime(s_year,s_month, s_day)
-    startDate = f"{s_month}-{s_day}-{s_year}"
-    candle_intervals = ["1min", "3min", "5min", "15min", "30min", "1h", "4h", "6h", "1D"]  # ["1min", "3min", "5min", "15min", "30min", "1h", "4h", "6h", "1D"]
+    startDate = datetime.datetime(s_year, s_month, s_day)
+
+    # TODO: Change only next 2 line nothing else
+    candle_intervals = ["1min", "3min", "5min", "15min", "30min", "1h", "4h", "6h", "12h","1D"]  # ["1min", "3min", "5min", "15min", "30min", "1h", "4h", "6h", "1D"]
     tickers = ["BTCUSDT", "ETHUSDT"]
 
     # load/update tickers|
@@ -40,10 +41,7 @@ def main():
             for candle_interval in candle_intervals:
                 start = time.time()
                 # data path where we want to have data
-                data_path = f"{root}/data/{ticker}_{candle_interval}.p"     
-                # ----------------------------------------------------------------------------------------------------------------------
-
-                
+                data_path = f"{root}/data/{ticker}_{candle_interval}.p"
 
                 # checks if file with ticker data already exists
                 if os.path.exists(data_path) == False:  
@@ -52,12 +50,12 @@ def main():
 
                     #  dumps downloaded data into file
                     pickle.dump(daily_data, open(data_path,"wb"))
-                    print(f"data load for {ticker} {candle_interval} took",round(time.time() - start, 2), "s")
+                    print(f"data load for {ticker} {candle_interval} took", round(time.time() - start, 2), "s")
 
                 else:
                     # atleast 3 days of data needs to be missing
                     bcd.update_candle_data(data_path, ticker)
-                    print(f"data update for {ticker} {candle_interval} took",round(time.time() - start, 2), "s")
+                    print(f"data update for {ticker} {candle_interval} took", round(time.time() - start, 2), "s")
 
     else:
         pass

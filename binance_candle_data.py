@@ -50,6 +50,8 @@ def get_candle_data(symbol="BTCUSDT", time_interval="1D", start_date=datetime.da
         kline_interval = Client.KLINE_INTERVAL_4HOUR
     elif time_interval == "6h":
         kline_interval = Client.KLINE_INTERVAL_6HOUR
+    elif time_interval == "12h":
+        kline_interval = Client.KLINE_INTERVAL_12HOUR
     elif time_interval == "1D":
         kline_interval = Client.KLINE_INTERVAL_1DAY
 
@@ -100,7 +102,7 @@ def update_candle_data(filepath, ticker, update_date=datetime.datetime.today()):
 
 
     root = Path(".")                                                                    # set root for filepath to current directory
-    intervals = ["1min", "3min", "5min", "15min", "30min", "1h", "4h", "6h", "1D"]      # possible time intervals
+    intervals = ["1min", "3min", "5min", "15min", "30min", "1h", "4h", "6h", "12h","1D"]      # possible time intervals
 
     # checks the file name and finds the data time_frame
     for i in intervals:
@@ -120,8 +122,9 @@ def update_candle_data(filepath, ticker, update_date=datetime.datetime.today()):
 
 
     # updates data if there is atleast 1 day of missing data
+
     if missing_data.days != 0:
-        print(f"updating missing days of data {missing_data.days}")    
+        print(f"updating missing days of data {missing_data.days}") 
         update = get_candle_data(ticker, time_frame, startDate, update_date)    # gets missing data
         data = data.append(update, ignore_index=True)                           # appends new data to previously loaded
         data.reset_index(drop=True)                                             # reindexes dataframe because missing data indexes start with 1 again
@@ -211,8 +214,8 @@ def main():
 
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
 
 
 
