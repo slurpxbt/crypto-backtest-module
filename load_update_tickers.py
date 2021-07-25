@@ -7,7 +7,6 @@ from pathlib import Path
 import pickle
 import os
 import time
-import binance_usdt_markets as binance_markets
 
 
 def load_and_update_tickers(tickers):
@@ -25,7 +24,7 @@ def load_and_update_tickers(tickers):
 
 
     # TODO: Change only next 2 lines nothing else
-    candle_intervals = ["1h"]
+    candle_intervals = ["1min", "3min", "5min", "15min", "30min", "1h", "4h", "6h", "12h","1D"]
 
     # load/update tickers|
     load_update_tickers = True                             
@@ -34,8 +33,8 @@ def load_and_update_tickers(tickers):
     if load_update_tickers == True:
         
         # check if directory for data exists -> if not it creates it
-        if os.path.isdir(f"{root}/data_all_coins") == False:
-            os.mkdir(f"{root}/data_all_coins")
+        if os.path.isdir(f"{root}/data") == False:
+            os.mkdir(f"{root}/data")
         else:
             pass
         
@@ -45,7 +44,7 @@ def load_and_update_tickers(tickers):
             for candle_interval in candle_intervals:
                 start = time.time()
                 # data path where we want to have data
-                data_path = f"{root}/data_all_coins/{ticker}_{candle_interval}.p"
+                data_path = f"{root}/data/{ticker}_{candle_interval}.p"
 
                 # checks if file with ticker data already exists
                 if os.path.exists(data_path) == False:  
@@ -62,3 +61,8 @@ def load_and_update_tickers(tickers):
 
     else:
         pass
+
+
+tickers = ["BTCUSDT", "ETHUSDT"]
+
+load_and_update_tickers(tickers)
