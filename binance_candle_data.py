@@ -92,7 +92,7 @@ def get_candle_data(symbol="BTCUSDT", time_interval="1D", start_date=datetime.da
     return candle_data_df
 
 
-def update_candle_data(filepath, ticker, update_date=datetime.datetime.today()):
+def update_candle_data(filepath, ticker, update_date=datetime.datetime.today()-datetime.timedelta(days=1)):
     """
         params:
             filepath   : string - path to the file 
@@ -115,10 +115,10 @@ def update_candle_data(filepath, ticker, update_date=datetime.datetime.today()):
  
     last_data_point_date = data.loc[data.index[-1]]["open_time"].date()                 # checks date of last data point
     missing_data = update_date.date() - last_data_point_date                            # check many days of data is missing
-    new_date = data.loc[data.index[-1]]["open_time"].date() + datetime.timedelta(1)     # set the date from when we update data => 1 day + our last data entry
+    last_data_point = data.loc[data.index[-1]]["open_time"]                                    # set the date from when we update data => 1 day + our last data entry
     
     # sets date into right format 
-    startDate = datetime.datetime(new_date.year, new_date.month, new_date.day)
+    startDate = datetime.datetime(last_data_point.year, last_data_point.month, last_data_point.day, last_data_point.hour, last_data_point.minute, 0, 0)
 
 
     # updates data if there is atleast 1 day of missing data
