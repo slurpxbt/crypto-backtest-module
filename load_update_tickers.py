@@ -56,7 +56,7 @@ def load_and_update_tickers(tickers):
                     print(f"data load for {ticker} {candle_interval} took", round(time.time() - start, 2), "s")
 
                 else:
-                    bcd.update_candle_data(data_path, ticker)
+                    bcd.update_candle_data(data_path, ticker, update_date=endDate)
                     print(f"data update for {ticker} {candle_interval} took", round(time.time() - start, 2), "s")
 
     else:
