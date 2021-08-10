@@ -21,12 +21,9 @@
      - Every time you want to update data to the newest you should run this script
      
 2. When data is downloaded  open <b>backtest_template.py</b>
-   - you can change parameters in lines 19 - 36 and 43 - 45 (don't change other stuff)
-   - if you want to add any EMAs or MAs to strategy you should add them to dataframe <b>data</b> anywhere before line 49
-   - your strategy should go below line 60
+   - in this file you can test strategies
    
-3. In the template one strategy is already written so if you have any problems go trough with debbuger to see what the code is doing
-4. Although this is really easy to use you should know atleast some python to be able to use it
+3. Although this is really easy to use you should know atleast some python to be able to use it
 
 <b>If you have any question regarding the scripts you can ask me on twitter @slurpxbt</b>
 
