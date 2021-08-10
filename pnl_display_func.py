@@ -61,7 +61,7 @@ def display_pnl(pct_returns:list,coin_amount:list, usd_amount:list, coin_prices:
     w_l_ratio = round(len(wins) / len(pct_returns) * 100, 2)
 
     avg_pct_gain = round(np.average(pct_returns), 2)
-    profit_factor = round(sum(wins)/sum(losses), 2)
+    profit_factor = round(sum(wins)/abs(sum(losses)), 2)
 
     print("*" * 100)
     print("*" * 100)
