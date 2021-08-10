@@ -15,8 +15,8 @@
  
  <p>How to run backtest template:</p>
  
-1. Run <b>load_update_tickers.py</b> this will update existing data in the data folde
-     - If you want to add any more tickers to your backtest you need to change line 25 (Binance only)
+1. Run <b>load_update_tickers.py</b> this will update existing data in the data folder
+     - At the end of this file species ticker you want data for and timeframes
      - If you want to have only your data delete files in data folder and run script again(It can take some time if you want 1min data <b>[could be up to an 1h for 2 tickers]</b>)
      - Every time you want to update data to the newest you should run this script
      
