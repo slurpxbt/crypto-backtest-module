@@ -9,7 +9,7 @@ import os
 import time
 
 
-def load_and_update_tickers(tickers):
+def load_and_update_tickers(tickers, candle_intervals):
 
     root = Path(".")    # set root for filepath to current directory
 
@@ -21,10 +21,6 @@ def load_and_update_tickers(tickers):
     startDate = datetime.datetime(s_year, s_month, s_day)
     yesterday = datetime.datetime.today() - datetime.timedelta(days=1)  # 5----1
     endDate = datetime.datetime(yesterday.year, yesterday.month, yesterday.day, 22, 0, 0)   # 14----22
-
-
-    # TODO: Change only next 2 lines nothing else
-    candle_intervals = ["1min", "3min", "5min", "15min", "30min", "1h", "4h", "6h", "12h","1D"]
 
     # load/update tickers|
     load_update_tickers = True                             
@@ -63,6 +59,13 @@ def load_and_update_tickers(tickers):
         pass
 
 
+# TODO: Change tickers and intervals
+
+candle_intervals = ["1min", "3min", "5min", "15min", "30min", "1h", "4h", "6h", "12h","1D"]
 tickers = ["BTCUSDT", "ETHUSDT"]
 
-load_and_update_tickers(tickers)
+candle_intervals_bybitAlts = ["15min", "1h", "4h", "12h"]
+tickers_bybitAlts = ["AAVEUSDT", "UNIUSDT","SOLUSDT", "DOTUSDT", "LINKUSDT", "SUSHIUSDT"]
+
+load_and_update_tickers(tickers, candle_intervals)
+load_and_update_tickers(tickers_bybitAlts, candle_intervals_bybitAlts)
