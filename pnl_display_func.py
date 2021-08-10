@@ -41,7 +41,7 @@ def display_pnl(pct_returns:list,coin_amount:list, usd_amount:list, coin_prices:
     """
 
     usd_pct_gain = round(((usd_amount[-1]) / (usd_amount[0]) - 1) * 100, 2)
-    coin_pct_gain = round((coin_amount[-1]/coin_amount[0]-1)*100,5)
+    coin_pct_gain = round((coin_amount[-1]/coin_amount[0]-1)*100,2)
 
     start_size =usd_amount[0]
     size = start_size
@@ -58,7 +58,7 @@ def display_pnl(pct_returns:list,coin_amount:list, usd_amount:list, coin_prices:
         else:
             losses.append(ret)
 
-    buy_hold = round(len(wins) / len(pct_returns) * 100, 2)
+    w_l_ratio = round(len(wins) / len(pct_returns) * 100, 2)
 
     avg_pct_gain = round(np.average(pct_returns), 2)
     profit_factor = round(sum(wins)/sum(losses), 2)
@@ -72,9 +72,10 @@ def display_pnl(pct_returns:list,coin_amount:list, usd_amount:list, coin_prices:
     print("-" * 100)
     print(f"pure % return on usd collat: {usd_margin_equivalent_pct_gain} %")
     print(f"coin return: {coin_pct_gain} % || start: {coin_amount[0]} {ticker[:-4]} {round(coin_amount[0] * coin_prices[0])} $ || end: {coin_amount[-1]} {ticker[-4:]} {round(coin_amount[-1] * coin_prices[-1])} $ || usd % gain: {usd_pct_gain} %")
-    print(f"w/l ratio: {buy_hold} %")
+    print(f"w/l ratio: {w_l_ratio} %")
     print("-" * 100)
     print(f"buy and hold ret: {buy_hold} %")
+    print(f"performance against buy & hold: {round(coin_pct_gain/buy_hold, 2)}")
     print(f"avg. pct. gain: {avg_pct_gain} %")
     print(f"profit factor: {profit_factor}")
     print("-" * 100)
