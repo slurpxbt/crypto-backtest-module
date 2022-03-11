@@ -2,7 +2,7 @@
 # Author: slurpxbt
 #######################
 import binance_candle_data as bcd
-import pnl_display_funcs as pnl
+import pnl_display_func as pnl
 from pathlib import Path
 import pandas as pd
 import datetime
